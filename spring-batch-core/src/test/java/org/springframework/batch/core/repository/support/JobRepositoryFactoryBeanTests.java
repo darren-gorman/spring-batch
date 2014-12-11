@@ -101,9 +101,10 @@ public class JobRepositoryFactoryBeanTests {
 	}
 
 	@Test
-	public void testOracleLobHandler() throws Exception {
+	public void testOracleLobHandlerWithOracleDatabaseType() throws Exception {
 
 		factory.setDatabaseType("ORACLE");
+		factory.setLobHandler(new OracleLobHandler());
 
 		incrementerFactory = mock(DataFieldMaxValueIncrementerFactory.class);
 		when(incrementerFactory.isSupportedIncrementerType("ORACLE")).thenReturn(true);
@@ -115,6 +116,28 @@ public class JobRepositoryFactoryBeanTests {
 		factory.afterPropertiesSet();
 		LobHandler lobHandler = (LobHandler) ReflectionTestUtils.getField(factory, "lobHandler");
 		assertTrue(lobHandler instanceof OracleLobHandler);
+
+	}
+
+	@Test
+	public void testNullLobHandlerWithOracleDatabaseType() throws Exception {
+
+		factory.setDatabaseType("ORACLE");
+
+		incrementerFactory = mock(DataFieldMaxValueIncrementerFactory.class);
+		when(incrementerFactory.isSupportedIncrementerType("ORACLE")).thenReturn(true);
+		when(incrementerFactory.getIncrementer("ORACLE", tablePrefix + "JOB_SEQ")).thenReturn(new StubIncrementer());
+		when(incrementerFactory.getIncrementer("ORACLE", tablePrefix + "JOB_EXECUTION_SEQ")).thenReturn(new StubIncrementer());
+		when(incrementerFactory.getIncrementer("ORACLE", tablePrefix + "STEP_EXECUTION_SEQ")).thenReturn(new StubIncrementer());
+		factory.setIncrementerFactory(incrementerFactory);
+
+		try {
+			factory.afterPropertiesSet();
+		} catch (IllegalArgumentException ex) {
+			// expected
+			String message = ex.getMessage();
+			assertTrue("Wrong message: " + message, message.equals("LobHandler must not be null for Oracle database"));
+		}
 
 	}
 

@@ -183,9 +183,8 @@ public class JobRepositoryFactoryBean extends AbstractJobRepositoryFactoryBean i
 			logger.info("No database type set, using meta data indicating: " + databaseType);
 		}
 
-		if (lobHandler == null && databaseType.equalsIgnoreCase(DatabaseType.ORACLE.toString())) {
-			lobHandler = new OracleLobHandler();
-		}
+		Assert.isTrue(!(lobHandler == null && databaseType.equalsIgnoreCase(DatabaseType.ORACLE.toString())),
+				"LobHandler must not be null for Oracle database");
 
 		if(serializer == null) {
 			XStreamExecutionContextStringSerializer defaultSerializer = new XStreamExecutionContextStringSerializer();
